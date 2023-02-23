@@ -82,11 +82,13 @@ class AttentionPool2d(nn.Module):
         x = x + self.positional_embedding[:, None, :].to(x.dtype)  # (HW+1)NC
 
         # OG: x shape here is ---> 50, 1, 2048
-        # temp = self.c_proj(x.transpose(-1, -2) @ self.v_proj(x))
-        # print(x.shape,x[:1].squeeze(0).shape, temp.shape)
-        x = self.c_proj(x)
+        # self.v_proj(x).shape is ---> 50, 1, 2048
 
-        # x shape here should be ---> 50, 1, 512
+        weights_with_value = self.c_proj(x.transpose(-2,-1) @ self.v_proj(x))
+        # weights_with_value.shape becomes ---> [50, 2048, 512]
+
+        # After this change, x shape here should be ---> 50, 1, 512
+        x = self.c_proj(x)
 
         # x, _ = F.multi_head_attention_forward(
         #     query=x[:1], key=x, value=x,
