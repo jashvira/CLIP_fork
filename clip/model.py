@@ -84,11 +84,11 @@ class AttentionPool2d(nn.Module):
         # OG: x shape here is ---> 50, 1, 2048
         # self.v_proj(x).shape is ---> 50, 1, 2048
 
-        weights_with_value = self.c_proj(x.transpose(-2,-1) @ self.v_proj(x))
-        # weights_with_value.shape becomes ---> [50, 2048, 512]
+        # Jack's directions:
+        # Just take v_proj(x)
 
         # After this change, x shape here should be ---> 50, 1, 512
-        x = self.c_proj(x)
+        x = self.c_proj(self.v_proj(x))
 
         # x, _ = F.multi_head_attention_forward(
         #     query=x[:1], key=x, value=x,
