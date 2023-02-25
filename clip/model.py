@@ -87,30 +87,9 @@ class AttentionPool2d(nn.Module):
         # Jack's directions:
         # Just take v_proj(x)
 
-        # After this change, x shape here should be ---> 50, 1, 512
+        # Applying output layer as well.
         x = self.c_proj(self.v_proj(x))
-
-        # x, _ = F.multi_head_attention_forward(
-        #     query=x[:1], key=x, value=x,
-        #     embed_dim_to_check=x.shape[-1],
-        #     num_heads=self.num_heads,
-        #     q_proj_weight=self.q_proj.weight,
-        #     k_proj_weight=self.k_proj.weight,
-        #     v_proj_weight=self.v_proj.weight,
-        #     in_proj_weight=None,
-        #     in_proj_bias=torch.cat([self.q_proj.bias, self.k_proj.bias, self.v_proj.bias]),
-        #     bias_k=None,
-        #     bias_v=None,
-        #     add_zero_attn=False,
-        #     dropout_p=0,
-        #     out_proj_weight=self.c_proj.weight,
-        #     out_proj_bias=self.c_proj.bias,
-        #     use_separate_proj_weight=True,
-        #     training=self.training,
-        #     need_weights=False
-        # )
-        # OG: x shape here is ---> 1, 1, 512
-        # return x.squeeze(0)
+        # After this change, x shape here should be ---> 50, 1, 512
         return x
 
 
