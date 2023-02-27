@@ -77,9 +77,13 @@ class AttentionPool2d(nn.Module):
 
     def forward(self, x):
         # OG: x shape here is ---> 1, 2048, 7, 7
-        x = x.flatten(start_dim=2).permute(2, 0, 1)  # NCHW -> (HW)NC
-        x = torch.cat([x.mean(dim=0, keepdim=True), x], dim=0)  # (HW+1)NC
-        x = x + self.positional_embedding[:, None, :].to(x.dtype)  # (HW+1)NC
+        x = x.permute(2, 3, 0, 1)  # NCHW -> (HW)NC
+        # x = torch.cat([x.mean(dim=0, keepdim=True), x], dim=0)  # (HW+1)NC
+
+        # TODO Jash: Shape of positional embedding is ---> 50, 2048
+        # It doesn't allow me to change the shape, gives an error while
+        # loading CLIP model.
+        # x = x + self.positional_embedding[:, None, :].to(x.dtype)  # (HW+1)NC
 
         # OG: x shape here is ---> 50, 1, 2048
         # self.v_proj(x).shape is ---> 50, 1, 2048
@@ -163,27 +167,17 @@ class ModifiedResNet(nn.Module):
     def forward(self, x):
         def stem(x):
             x = self.relu1(self.bn1(self.conv1(x)))
-            print("After Conv 1",x.shape)
             x = self.relu2(self.bn2(self.conv2(x)))
-            print("After Conv 2",x.shape)
             x = self.relu3(self.bn3(self.conv3(x)))
-            print("After Conv 3",x.shape)
             x = self.avgpool(x)
-            print("After avgpool",x.shape)
             return x
 
         x = x.type(self.conv1.weight.dtype)
-        print("Initial",x.shape)
         x = stem(x)
-        print("After STEM",x.shape)
         x = self.layer1(x)
-        print("After layer 1",x.shape)
         x = self.layer2(x)
-        print("After layer 2",x.shape)
         x = self.layer3(x)
-        print("After layer 3",x.shape)
         x = self.layer4(x)
-        print("After layer 4",x.shape)
         x = self.attnpool(x)
 
         return x
